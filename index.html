@@ -130,9 +130,6 @@
         button.danger:active { background-color: #c0392b; }
         button.nav-next { background-color: var(--active-tab); }
 
-        /* =========================================
-           雙直欄佈局與高壓版面控制
-           ========================================= */
         .layout-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -248,7 +245,6 @@
 
 <div class="container">
 
-    <!-- 第一層 -->
     <div id="page1" class="page active">
         <div class="card" style="margin-bottom:15px;">
             <h2>匯入品項對照表與現有庫存量</h2>
@@ -264,7 +260,6 @@
         </div>
     </div>
 
-    <!-- 第二層 -->
     <div id="page2" class="page">
         <div class="dev-toggle-container">
             <label style="cursor: pointer; font-size: 0.75rem; color: #7f8c8d;">
@@ -280,9 +275,7 @@
         </div>
 
         <div class="layout-grid">
-            <!-- 【左側直欄】 -->
             <div class="col-flex">
-                <!-- 左上：掃碼與品項 -->
                 <div class="card">
                     <div class="form-group">
                         <label>讀取條碼</label>
@@ -294,7 +287,6 @@
                     </div>
                 </div>
 
-                <!-- 左下：即時盤點預覽 -->
                 <div class="card" style="flex-grow: 1; display: flex; flex-direction: column; overflow: hidden;">
                     <h2>已儲存資料</h2>
                     <div class="table-container">
@@ -313,9 +305,7 @@
                 </div>
             </div>
 
-            <!-- 【右側直欄】 -->
             <div class="col-flex" style="justify-content: flex-start;">
-                
                 <div class="card">
                     <h2>輸入效期與數量</h2>
                     <div class="io-container">
@@ -361,7 +351,6 @@
         </div>
     </div>
 
-    <!-- 第三層 -->
     <div id="page3" class="page">
         <div class="card" style="margin-bottom:15px;">
             <h2>匯出盤點紀錄</h2>
@@ -376,7 +365,6 @@
             <button class="danger" onclick="clearLocalRecords()">清空本機暫存歷史盤點紀錄</button>
         </div>
     </div>
-
 </div>
 
 <script>
@@ -510,23 +498,29 @@
     }
 
     function parseBarcodeExpiry(barcode) {
+        // 1. 處理逗號分隔格式
+        if (barcode.includes(',')) {
+            let parts = barcode.split(',');
+            if (parts.length >= 3) {
+                let dateStr = parts[2].trim();
+                if (dateStr.includes('/')) return dateStr.replace(/\//g, '-');
+                if (/^\d{8}$/.test(dateStr)) return `${dateStr.substr(0,4)}-${dateStr.substr(4,2)}-${dateStr.substr(6,2)}`;
+            }
+        }
+        // 2. 處理連續字串日期格式
+        let allMatches = barcode.match(/20\d{6}/g);
+        if (allMatches && allMatches.length >= 2) {
+            let dateStr = allMatches[1];
+            return `${dateStr.substr(0,4)}-${dateStr.substr(4,2)}-${dateStr.substr(6,2)}`;
+        }
+        // 3. 通用保底規則
         if(barcode.includes('17') && barcode.length >= 14) {
             let index = barcode.indexOf('17');
-            if(index + 8 <= barcode.length) {
-                let yy = barcode.substr(index + 2, 2);
-                let mm = barcode.substr(index + 4, 2);
-                let dd = barcode.substr(index + 6, 2);
-                return `20${yy}-${mm}-${dd}`;
-            }
+            if(index + 8 <= barcode.length) return `20${barcode.substr(index+2,2)}-${barcode.substr(index+4,2)}-${barcode.substr(index+6,2)}`;
         }
         let endSix = barcode.slice(-6);
         if(/^\d{6}$/.test(endSix)) {
-            let yy = endSix.substr(0,2);
-            let mm = endSix.substr(2,2);
-            let dd = endSix.substr(4,2);
-            if(parseInt(mm) >= 1 && parseInt(mm) <= 12) {
-                return `20${yy}-${mm}-${dd}`;
-            }
+            if(parseInt(endSix.substr(2,2)) >= 1 && parseInt(endSix.substr(2,2)) <= 12) return `20${endSix.substr(0,2)}-${endSix.substr(2,2)}-${endSix.substr(4,2)}`;
         }
         return null;
     }
@@ -535,8 +529,7 @@
         if(!isoDateStr || isoDateStr === '未註記') return '未註記';
         const parts = isoDateStr.split('-');
         if(parts.length < 3) return isoDateStr;
-        let twYear = parseInt(parts[0]) - 1911;
-        return `民國 ${twYear} 年 ${parts[1]} 月 ${parts[2]} 日`;
+        return `民國 ${parseInt(parts[0]) - 1911} 年 ${parts[1]} 月 ${parts[2]} 日`;
     }
 
     function pressKey(key) {
@@ -545,20 +538,13 @@
             else { qtyBuffer += key; }
             updateUIValues();
         } else {
-            if (key === 'CLEAR') { 
-                resetExpiryField();
-            } else if (key !== '00') { 
+            if (key === 'CLEAR') { resetExpiryField(); } 
+            else if (key !== '00') { 
                 if (expDigits.length < 6) {
                     let num = parseInt(key);
-                    if (expDigits.length === 2 && num >= 2) {
-                        expDigits.push(0);
-                        expDigits.push(num);
-                    } else if (expDigits.length === 4 && num >= 4) {
-                        expDigits.push(0);
-                        expDigits.push(num);
-                    } else {
-                        expDigits.push(num);
-                    }
+                    if (expDigits.length === 2 && num >= 2) { expDigits.push(0); expDigits.push(num); }
+                    else if (expDigits.length === 4 && num >= 4) { expDigits.push(0); expDigits.push(num); }
+                    else { expDigits.push(num); }
                     renderExpiryMask();
                 }
             }
@@ -569,79 +555,36 @@
         let display = document.getElementById('displayExpiry');
         let raw = document.getElementById('rawExpiryDate');
         let chars = ['2', '0', '_', '_', '/', '_', '_', '/', '_', '_'];
-        
         if(expDigits[0] !== undefined) chars[2] = expDigits[0];
         if(expDigits[1] !== undefined) chars[3] = expDigits[1];
         if(expDigits[2] !== undefined) chars[5] = expDigits[2];
         if(expDigits[3] !== undefined) chars[6] = expDigits[3];
         if(expDigits[4] !== undefined) chars[8] = expDigits[4];
         if(expDigits[5] !== undefined) chars[9] = expDigits[5];
-        
         display.value = chars.join('');
-
         if (expDigits.length === 6) {
-            let yyyy = `20${expDigits[0]}${expDigits[1]}`;
-            let mm = `${expDigits[2]}${expDigits[3]}`;
-            let dd = `${expDigits[4]}${expDigits[5]}`;
-            raw.value = `${yyyy}-${mm}-${dd}`;
+            raw.value = `20${expDigits[0]}${expDigits[1]}-${expDigits[2]}${expDigits[3]}-${expDigits[4]}${expDigits[5]}`;
             setTimeout(() => { changeModeViaClick('QTY'); }, 150);
-        } else {
-            raw.value = '';
-        }
+        } else { raw.value = ''; }
     }
 
-    function resetExpiryField() {
-        expDigits = [];
-        document.getElementById('rawExpiryDate').value = '';
-        document.getElementById('displayExpiry').value = '20__/__/__';
-    }
-
-    function updateUIValues() {
-        document.getElementById('currentInputValue').value = qtyBuffer || '0';
-    }
+    function resetExpiryField() { expDigits = []; document.getElementById('rawExpiryDate').value = ''; document.getElementById('displayExpiry').value = '20__/__/__'; }
+    function updateUIValues() { document.getElementById('currentInputValue').value = qtyBuffer || '0'; }
 
     function commitRecord() {
         const barcode = document.getElementById('currentBarcode').value;
         const itemName = document.getElementById('currentItemName').innerText;
         const rawExpiry = document.getElementById('rawExpiryDate').value || '未註記';
         const qty = parseInt(qtyBuffer) || 0;
-
         if(!barcode || itemName === '請掃描條碼...') { alert('尚未讀取任何有效條碼。'); return; }
         if(rawExpiry === '' && expDigits.length > 0) { alert('請先將有效期限 6 碼完全補齊。'); return; }
         if(qty <= 0) { alert('請輸入大於 0 的正確點收數量。'); return; }
-
         const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        const batchDate = `${year}-${month}-${day}`; 
-        const timeStamp = now.toTimeString().split(' ')[0];
-
-        const storedTaiwanExpiry = (rawExpiry !== '未註記') ? convertToTaiwanYear(rawExpiry) : '未註記';
-
-        const newRecord = {
-            batchDate: batchDate,
-            timeStamp: timeStamp,
-            barcode: barcode,
-            itemName: itemName,
-            expiryDisplay: (rawExpiry !== '未註記') ? rawExpiry.replace(/-/g, '/') : '未註記', 
-            expiryStored: storedTaiwanExpiry, 
-            quantity: qty
-        };
-
+        const batchDate = now.toISOString().split('T')[0];
+        const newRecord = { batchDate, timeStamp: now.toTimeString().split(' ')[0], barcode, itemName, expiryDisplay: (rawExpiry !== '未註記') ? rawExpiry.replace(/-/g, '/') : '未註記', expiryStored: (rawExpiry !== '未註記') ? convertToTaiwanYear(rawExpiry) : '未註記', quantity: qty };
         inventoryRecords.unshift(newRecord);
         localStorage.setItem('inventoryRecords', JSON.stringify(inventoryRecords));
-
-        qtyBuffer = ''; 
-        resetExpiryField();
-        document.getElementById('currentBarcode').value = '';
-        document.getElementById('currentItemName').innerText = '請掃描條碼...';
-        document.getElementById('currentStockView').innerText = '--';
-        
-        changeModeViaClick('QTY');
-        updateUIValues();
-        updateRecordCount();
-        renderPreviewTable();
+        qtyBuffer = ''; resetExpiryField(); document.getElementById('currentBarcode').value = ''; document.getElementById('currentItemName').innerText = '請掃描條碼...'; document.getElementById('currentStockView').innerText = '--'; changeModeViaClick('QTY'); updateUIValues(); updateRecordCount(); renderPreviewTable();
     }
 
     function renderPreviewTable() {
@@ -649,61 +592,29 @@
         tbody.innerHTML = '';
         inventoryRecords.slice(0, 5).forEach(rec => {
             const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${rec.barcode}</td>
-                <td>${rec.itemName}</td>
-                <td>${rec.expiryDisplay}</td>
-                <td><strong>${rec.quantity}</strong></td>
-            `;
+            tr.innerHTML = `<td>${rec.barcode}</td><td>${rec.itemName}</td><td>${rec.expiryDisplay}</td><td><strong>${rec.quantity}</strong></td>`;
             tbody.appendChild(tr);
         });
     }
 
-    function updateRecordCount() {
-        document.getElementById('recordCount').innerText = `目前本機 Local 端共累積暫存：${inventoryRecords.length} 筆紀錄。`;
-    }
+    function updateRecordCount() { document.getElementById('recordCount').innerText = `目前本機 Local 端共累積暫存：${inventoryRecords.length} 筆紀錄。`; }
 
     function exportToCSV() {
         const targetDate = document.getElementById('exportDateFilter').value;
         if(!targetDate) { alert('請先選擇歸檔批號日期。'); return; }
-
         const filtered = inventoryRecords.filter(rec => rec.batchDate === targetDate);
         if(filtered.length === 0) { alert(`在 ${targetDate} 找不到任何對應的盤點紀錄。`); return; }
-
         let csvContent = "歸檔批號日期,點收時間,商品條碼,品項名稱,有效期限(民國年格式),盤點數量\r\n";
-        filtered.forEach(rec => {
-            let row = [
-                rec.batchDate,
-                rec.timeStamp,
-                `="${rec.barcode}"`, 
-                rec.itemName.replace(/,/g, ' '), 
-                rec.expiryStored, 
-                rec.quantity
-            ].join(",");
-            csvContent += row + "\r\n";
-        });
-
-        const BOM = "\uFEFF";
-        const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" });
+        filtered.forEach(rec => { csvContent += [rec.batchDate, rec.timeStamp, `="${rec.barcode}"`, rec.itemName.replace(/,/g, ' '), rec.expiryStored, rec.quantity].join(",") + "\r\n"; });
+        const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
         const link = document.createElement("a");
-        if (link.download !== undefined) {
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
-            link.setAttribute("download", `中藥盤點紀錄_${targetDate}.csv`);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url); link.setAttribute("download", `中藥盤點紀錄_${targetDate}.csv`); link.click();
     }
 
     function clearLocalRecords() {
         if(confirm('警告：這將徹底清空此瀏覽器中的所有盤點歷史快取！\n請確認您已完成 CSV 匯出。是否繼續？')) {
-            inventoryRecords = [];
-            localStorage.removeItem('inventoryRecords');
-            updateRecordCount();
-            renderPreviewTable();
-            alert('本機歷史盤點資料已清空。');
+            inventoryRecords = []; localStorage.removeItem('inventoryRecords'); updateRecordCount(); renderPreviewTable(); alert('本機歷史盤點資料已清空。');
         }
     }
 </script>
