@@ -511,41 +511,35 @@
     }
 
     function parseBarcodeExpiry(barcode) {
-        // 【新增防呆攔截】
-        // 如果條碼長度小於或等於 13 碼 (例如標準 EAN-13 商品條碼)
-        // 絕對不可能包含獨立的效期資訊，直接中斷解析並回傳 null，避免後續邏輯誤判
+        // 如果條碼長度小於或等於 13 碼，絕對不可能包含獨立的效期資訊，直接回傳 null
         if (barcode.length <= 13) {
             return null;
         }
 
-        // 1. 處理逗號分隔格式
+        // 1. 處理逗號分隔格式 (例如：條碼,批號,20251231)
         if (barcode.includes(',')) {
             let parts = barcode.split(',');
             if (parts.length >= 3) {
                 let dateStr = parts[2].trim();
                 if (dateStr.includes('/')) return dateStr.replace(/\//g, '-');
+                // 驗證是否為 8 碼數字 YYYYMMDD
                 if (/^\d{8}$/.test(dateStr)) return `${dateStr.substr(0,4)}-${dateStr.substr(4,2)}-${dateStr.substr(6,2)}`;
             }
         }
         
-        // 2. 處理連續字串日期格式
+        // 2. 處理連續字串日期格式 (從長條碼中尋找 20 開頭的 8 碼數字)
         let allMatches = barcode.match(/20\d{6}/g);
         if (allMatches && allMatches.length >= 2) {
+            // 抓取第二組符合 20YYYYMMDD 的字串 (通常第一組可能是製造日期或編號)
             let dateStr = allMatches[1];
+            return `${dateStr.substr(0,4)}-${dateStr.substr(4,2)}-${dateStr.substr(6,2)}`;
+        } else if (allMatches && allMatches.length === 1) {
+            // 如果條碼中只有一組 20 開頭的 8 碼數字，就直接採用它
+            let dateStr = allMatches[0];
             return `${dateStr.substr(0,4)}-${dateStr.substr(4,2)}-${dateStr.substr(6,2)}`;
         }
         
-        // 3. 通用保底規則
-        if(barcode.includes('17') && barcode.length >= 14) {
-            let index = barcode.indexOf('17');
-            if(index + 8 <= barcode.length) return `20${barcode.substr(index+2,2)}-${barcode.substr(index+4,2)}-${barcode.substr(index+6,2)}`;
-        }
-        
-        let endSix = barcode.slice(-6);
-        if(/^\d{6}$/.test(endSix)) {
-            if(parseInt(endSix.substr(2,2)) >= 1 && parseInt(endSix.substr(2,2)) <= 12) return `20${endSix.substr(0,2)}-${endSix.substr(2,2)}-${endSix.substr(4,2)}`;
-        }
-        
+        // 若以上都找不到完整的 YYYYMMDD，則不帶入效期，讓使用者手動輸入
         return null;
     }
 
