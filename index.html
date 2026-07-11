@@ -5,28 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>中藥盤點系統 - 平板全屏極致壓縮版</title>
     <style>
-        :root {
-            --primary-color: #2c3e50;
-            --accent-color: #18bc9c;
-            --bg-color: #e9ecef;
-            --text-color: #333;
-            --active-tab: #3498db;
-            --focus-border: #e67e22;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden; 
-        }
-
+        :root { --primary-color: #2c3e50; --accent-color: #18bc9c; --bg-color: #e9ecef; --text-color: #333; --active-tab: #3498db; --focus-border: #e67e22; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 0; box-sizing: border-box; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         .step-tabs { display: flex; background-color: var(--primary-color); flex-shrink: 0; }
         .tab-btn { flex: 1; padding: 8px 5px; color: #bdc3c7; text-align: center; font-weight: bold; font-size: 0.9rem; cursor: pointer; border: none; background: none; transition: all 0.2s; border-bottom: 4px solid transparent; }
         .tab-btn.active { color: white; background-color: rgba(255,255,255,0.1); border-bottom: 4px solid var(--active-tab); }
@@ -35,124 +15,84 @@
         .page.active { display: flex; }
         .card { background: white; border-radius: 6px; padding: 8px 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); box-sizing: border-box; margin-bottom: 0; }
         h2 { margin-top: 0; color: var(--primary-color); font-size: 0.95rem; border-bottom: 2px solid var(--bg-color); padding-bottom: 4px; margin-bottom: 6px; flex-shrink: 0; }
-        .form-group { margin-bottom: 6px; }
         label { display: block; margin-bottom: 2px; font-weight: bold; font-size: 0.8rem; color: #555; }
         input[type="text"], textarea { width: 100%; padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.95rem; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background-color: var(--accent-color); color: white; border: none; border-radius: 4px; font-size: 0.95rem; font-weight: bold; cursor: pointer; transition: background 0.2s; }
-        button:active { background-color: #128f76; }
-        button.danger { background-color: #e74c3c; }
-        button.nav-next { background-color: var(--active-tab); }
+        button { width: 100%; padding: 10px; background-color: var(--accent-color); color: white; border: none; border-radius: 4px; font-size: 0.95rem; font-weight: bold; cursor: pointer; }
+        .nav-next { background-color: var(--active-tab); }
         .layout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; flex-grow: 1; min-height: 0; margin-bottom: 6px; }
         .col-flex { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
-        .huge-item-name { font-size: 1.25rem; font-weight: 900; color: #2c3e50; padding: 6px 8px; background-color: #f1f2f6; border-radius: 6px; border-left: 6px solid var(--primary-color); min-height: 32px; word-break: break-all; display: flex; align-items: center; }
+        .huge-item-name { font-size: 1.25rem; font-weight: 900; color: #2c3e50; padding: 6px 8px; background-color: #f1f2f6; border-radius: 6px; border-left: 6px solid var(--primary-color); min-height: 32px; display: flex; align-items: center; }
         .io-container { display: flex; gap: 6px; }
         .io-box { flex: 1; position: relative; }
-        .big-input { width: 100%; font-size: 1.25rem !important; font-weight: bold; text-align: center; padding: 6px 4px !important; border: 2px solid #ccc !important; border-radius: 6px; background-color: white; cursor: pointer; box-sizing: border-box; transition: all 0.2s; letter-spacing: 1px; }
-        .big-input.focused { border-color: var(--focus-border) !important; background-color: #fff9f4; box-shadow: 0 0 6px rgba(230, 126, 34, 0.2); }
-        .stock-box { width: 60px; display: flex; flex-direction: column; justify-content: center; align-items: center; background-color: #e8f4f8; border: 2px solid #3498db; border-radius: 6px; padding: 2px; box-sizing: border-box; }
-        .stock-title { font-size: 0.7rem; font-weight: bold; color: #2980b9; }
-        .stock-value { font-size: 1.1rem; font-weight: 900; color: #2c3e50; }
+        .big-input { width: 100%; font-size: 1.25rem !important; font-weight: bold; text-align: center; padding: 6px 4px !important; border: 2px solid #ccc !important; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+        .big-input.focused { border-color: var(--focus-border) !important; background-color: #fff9f4; }
+        .stock-box { width: 60px; display: flex; flex-direction: column; justify-content: center; align-items: center; background-color: #e8f4f8; border: 2px solid #3498db; border-radius: 6px; }
         .keyboard-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
-        .key-btn { padding: 20px 8px; background-color: #ecf0f1; color: var(--primary-color); border-radius: 4px; text-align: center; font-weight: bold; font-size: 1.3rem; user-select: none; cursor: pointer; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
-        .key-btn:active { background-color: #bdc3c7; }
-        .dev-toggle-container { text-align: right; margin-bottom: 2px; flex-shrink: 0; }
-        .dev-box { background-color: #fdf6e3; border: 1px dashed #b58900; padding: 4px 8px; border-radius: 6px; margin-bottom: 6px; display: none; flex-shrink: 0;}
-        .status-box { background-color: #e8f4f8; border-left: 4px solid #3498db; padding: 8px; margin-bottom: 10px; font-size: 0.85rem; border-radius: 0 4px 4px 0; }
+        .key-btn { padding: 20px 8px; background-color: #ecf0f1; color: var(--primary-color); border-radius: 4px; text-align: center; font-weight: bold; font-size: 1.3rem; cursor: pointer; }
         .table-container { flex-grow: 1; overflow-y: auto; max-height: calc(100vh - 200px); }
         table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-        th, td { border: 1px solid #ddd; padding: 4px; text-align: left; } 
-        th { background-color: var(--primary-color); color: white; position: sticky; top: 0; z-index: 10; }
+        th, td { border: 1px solid #ddd; padding: 4px; } th { background-color: var(--primary-color); color: white; }
     </style>
 </head>
 <body>
-
 <div class="step-tabs">
     <button class="tab-btn active" id="tab1" onclick="switchPage(1)">匯入盤點資料</button>
     <button class="tab-btn" id="tab2" onclick="switchPage(2)">輸入品項、效期與數量</button>
     <button class="tab-btn" id="tab3" onclick="switchPage(3)">輸出盤點結果</button>
 </div>
-
 <div class="container">
     <div id="page1" class="page active">
-        <div class="card" style="margin-bottom:15px;">
-            <h2>匯入品項對照表與現有庫存量</h2>
-            <textarea id="dbInput" rows="6" placeholder="條碼[Tab]品項名稱[Tab]庫存"></textarea>
-            <button onclick="importDatabase()" style="margin-top:5px;">匯入資料</button>
-            <div class="status-box" id="dbStatus">讀取中...</div>
-            <button class="nav-next" onclick="switchPage(2)" style="margin-top:5px;">對照表設定完成 ➔ 前往輸入品項、效期與數量</button>
-        </div>
+        <div class="card"><h2>匯入品項對照表與現有庫存量</h2>
+        <textarea id="dbInput" rows="6"></textarea>
+        <button onclick="importDatabase()" style="margin-top:5px;">匯入資料</button>
+        <button class="nav-next" onclick="switchPage(2)" style="margin-top:5px;">設定完成 ➔ 前往盤點</button></div>
     </div>
-
     <div id="page2" class="page">
-        <div class="dev-toggle-container"><label><input type="checkbox" id="devModeCheckbox" onchange="toggleDevMode()"> 手動輸入</label></div>
-        <div class="dev-box" id="devBox"><input type="text" id="devBarcodeInput" placeholder="輸入條碼"><button onclick="simulateHardwareScan()">執行</button></div>
         <div class="layout-grid">
             <div class="col-flex">
-                <div class="card">
-                    <label>讀取條碼</label><input type="text" id="currentBarcode" readonly>
-                    <label style="margin-top:5px;">品項名稱</label><div class="huge-item-name" id="currentItemName">請掃描條碼...</div>
-                </div>
-                <div class="card" style="flex-grow: 1;">
-                    <h2>已儲存資料</h2>
-                    <div class="table-container"><table id="previewTable"><thead><tr><th>條碼</th><th>品項</th><th>效期</th><th>數量</th></tr></thead><tbody></tbody></table></div>
-                </div>
+                <div class="card"><label>讀取條碼</label><input type="text" id="currentBarcode" readonly>
+                <label style="margin-top:5px;">品項名稱</label><div class="huge-item-name" id="currentItemName">請掃描條碼...</div></div>
+                <div class="card" style="flex-grow: 1;"><h2>已儲存資料</h2>
+                <div class="table-container"><table id="previewTable"><thead><tr><th>條碼</th><th>品項</th><th>效期</th><th>數量</th></tr></thead><tbody></tbody></table></div></div>
             </div>
             <div class="col-flex">
-                <div class="card">
-                    <h2>輸入效期與數量</h2>
-                    <div class="io-container">
-                        <div class="io-box"><label>有效期限</label><input type="text" id="displayExpiry" class="big-input" readonly value="20__/__/__" onclick="changeModeViaClick('EXP')"><input type="hidden" id="rawExpiryDate"></div>
-                        <div class="io-box"><label>數量</label><input type="text" id="currentInputValue" class="big-input focused" readonly value="0" onclick="changeModeViaClick('QTY')"></div>
-                        <div class="stock-box"><div class="stock-title">應有</div><div class="stock-value" id="currentStockView">--</div></div>
-                    </div>
-                    <div class="keyboard-grid" style="margin-top: 8px;">
-                        <div class="key-btn" onclick="pressKey('1')">1</div><div class="key-btn" onclick="pressKey('2')">2</div><div class="key-btn" onclick="pressKey('3')">3</div>
-                        <div class="key-btn" onclick="pressKey('4')">4</div><div class="key-btn" onclick="pressKey('5')">5</div><div class="key-btn" onclick="pressKey('6')">6</div>
-                        <div class="key-btn" onclick="pressKey('7')">7</div><div class="key-btn" onclick="pressKey('8')">8</div><div class="key-btn" onclick="pressKey('9')">9</div>
-                        <div class="key-btn" onclick="pressKey('0')">0</div><div class="key-btn" onclick="pressKey('00')">00</div><div class="key-btn" onclick="pressKey('CLEAR')" style="background-color:#e67e22;color:white;">清除</div>
-                    </div>
-                    <div style="margin-top: 45px;"><button onclick="commitRecord()" style="background-color:#2cc36b;padding:12px;">確認儲存此筆紀錄</button></div>
+                <div class="card"><h2>輸入效期與數量</h2>
+                <div class="io-container">
+                    <div class="io-box"><label>有效期限</label><input type="text" id="displayExpiry" class="big-input" readonly value="20__/__/__" onclick="changeModeViaClick('EXP')"><input type="hidden" id="rawExpiryDate"></div>
+                    <div class="io-box"><label>數量</label><input type="text" id="currentInputValue" class="big-input focused" readonly value="0" onclick="changeModeViaClick('QTY')"></div>
+                    <div class="stock-box"><div style="font-size:0.7rem;">應有</div><div id="currentStockView" style="font-size:1.1rem;font-weight:900;">--</div></div>
                 </div>
-                <div style="margin-top: 45px;"><button class="nav-next" onclick="switchPage(3)" style="padding:12px;">盤點完成 ➔ 匯出紀錄</button></div>
+                <div class="keyboard-grid" style="margin-top: 8px;">
+                    <div class="key-btn" onclick="pressKey('1')">1</div><div class="key-btn" onclick="pressKey('2')">2</div><div class="key-btn" onclick="pressKey('3')">3</div>
+                    <div class="key-btn" onclick="pressKey('4')">4</div><div class="key-btn" onclick="pressKey('5')">5</div><div class="key-btn" onclick="pressKey('6')">6</div>
+                    <div class="key-btn" onclick="pressKey('7')">7</div><div class="key-btn" onclick="pressKey('8')">8</div><div class="key-btn" onclick="pressKey('9')">9</div>
+                    <div class="key-btn" onclick="pressKey('0')">0</div><div class="key-btn" onclick="pressKey('00')">00</div><div class="key-btn" onclick="pressKey('CLEAR')" style="background-color:#e67e22;color:white;">清除</div>
+                </div>
+                <button onclick="commitRecord()" style="margin-top:10px;background-color:#2cc36b;padding:12px;">確認儲存此筆紀錄</button></div>
             </div>
         </div>
     </div>
-
     <div id="page3" class="page">
-        <div class="card">
-            <h2>匯出盤點紀錄</h2>
-            <div class="status-box" id="recordCount">共 0 筆紀錄</div>
-            <label>請選擇欲匯出的盤點日期：</label><input type="date" id="exportDateFilter">
-            <button onclick="exportToCSV()" style="margin-top:5px;">匯出 CSV 檔案</button>
-            <hr><button class="danger" onclick="clearLocalRecords()">清空本機暫存歷史盤點紀錄</button>
-        </div>
+        <div class="card"><h2>匯出盤點紀錄</h2><input type="date" id="exportDateFilter"><button onclick="exportToCSV()" style="margin-top:5px;">匯出 CSV</button></div>
     </div>
 </div>
-
 <script>
-    let itemDatabase = {}, inventoryRecords = [], currentInputMode = 'QTY', qtyBuffer = '', expDigits = [], scanBuffer = '', lastKeyTime = Date.now();
+    let itemDatabase = {}, inventoryRecords = [], currentInputMode = 'QTY', qtyBuffer = '', expDigits = [], scanBuffer = '';
     window.onload = function() {
         if(localStorage.getItem('itemDatabase')) itemDatabase = JSON.parse(localStorage.getItem('itemDatabase'));
         if(localStorage.getItem('inventoryRecords')) inventoryRecords = JSON.parse(localStorage.getItem('inventoryRecords'));
         document.getElementById('exportDateFilter').value = new Date().toISOString().split('T')[0];
-        updateDbStatus(); updateRecordCount(); renderPreviewTable();
-        window.addEventListener('keypress', handleHardwareScan);
+        window.addEventListener('keypress', (e) => { if(e.key === 'Enter') { processScannedBarcode(scanBuffer); scanBuffer = ''; } else scanBuffer += e.key; });
     };
-
     function switchPage(p) {
         document.querySelectorAll('.page').forEach(e => e.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(e => e.classList.remove('active'));
-        document.getElementById('page'+p).classList.add('active'); document.getElementById('tab'+p).classList.add('active');
+        document.getElementById('page'+p).classList.add('active');
     }
-    
     function importDatabase() {
         const raw = document.getElementById('dbInput').value.split('\n');
-        itemDatabase = {}; 
-        raw.forEach(line => { const p = line.split('\t'); if(p.length >= 2) itemDatabase[p[0].trim()] = { name: p[1].trim(), stock: p[2] || '0' }; });
-        localStorage.setItem('itemDatabase', JSON.stringify(itemDatabase));
-        updateDbStatus(); alert('資料導入完成！');
+        itemDatabase = {}; raw.forEach(line => { const p = line.split('\t'); if(p.length >= 2) itemDatabase[p[0].trim()] = { name: p[1].trim(), stock: p[2] || '0' }; });
+        localStorage.setItem('itemDatabase', JSON.stringify(itemDatabase)); alert('導入成功！');
     }
-
     function processScannedBarcode(barcode) {
         barcode = barcode.trim();
         document.getElementById('currentBarcode').value = barcode;
@@ -169,63 +109,46 @@
         if(date) { document.getElementById('rawExpiryDate').value = date; document.getElementById('displayExpiry').value = date.replace(/-/g, '/'); changeModeViaClick('QTY'); }
         else { resetExpiryField(); changeModeViaClick('EXP'); }
     }
-
-    function parseBarcodeExpiry(barcode) {
-        if (barcode.includes(',')) {
-            let p = barcode.split(',');
-            if (p.length >= 3) {
-                let d = p[2].trim();
-                if (d.includes('/')) return d.replace(/\//g, '-');
-                if (/^\d{8}$/.test(d)) return `${d.substr(0,4)}-${d.substr(4,2)}-${d.substr(6,2)}`;
-            }
-        }
-        let m = barcode.match(/20\d{6}/g);
-        if (m && m.length >= 2) return `${m[1].substr(0,4)}-${m[1].substr(4,2)}-${m[1].substr(6,2)}`;
-        if(barcode.includes('17') && barcode.length >= 14) {
-            let i = barcode.indexOf('17'); return `20${barcode.substr(i+2,2)}-${barcode.substr(i+4,2)}-${barcode.substr(i+6,2)}`;
-        }
-        let e = barcode.slice(-6);
-        if(/^\d{6}$/.test(e) && parseInt(e.substr(2,2)) <= 12) return `20${e.substr(0,2)}-${e.substr(2,2)}-${e.substr(4,2)}`;
+    function parseBarcodeExpiry(b) {
+        if (b.includes(',')) { let p = b.split(','); if (p.length >= 3) return p[2].trim().replace(/\//g, '-').replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3'); }
+        let m = b.match(/20\d{6}/g); if (m && m.length >= 2) return `${m[1].substr(0,4)}-${m[1].substr(4,2)}-${m[1].substr(6,2)}`;
+        if(b.includes('17') && b.length >= 14) { let i = b.indexOf('17'); return `20${b.substr(i+2,2)}-${b.substr(i+4,2)}-${b.substr(i+6,2)}`; }
+        let e = b.slice(-6); if(/^\d{6}$/.test(e) && parseInt(e.substr(2,2)) <= 12) return `20${e.substr(0,2)}-${e.substr(2,2)}-${e.substr(4,2)}`;
         return null;
     }
-
     function changeModeViaClick(m) { currentInputMode = m; document.getElementById('displayExpiry').classList.toggle('focused', m=='EXP'); document.getElementById('currentInputValue').classList.toggle('focused', m=='QTY'); }
     function pressKey(k) {
         if (currentInputMode === 'QTY') { if (k === 'CLEAR') qtyBuffer = ''; else qtyBuffer += k; updateUIValues(); }
-        else if (k !== 'CLEAR' && k !== '00' && expDigits.length < 6) { expDigits.push(parseInt(k)); renderExpiryMask(); }
-        else if (k === 'CLEAR') resetExpiryField();
+        else if (k !== 'CLEAR' && k !== '00') {
+            if (expDigits.length === 0 && parseInt(k) > 1) { expDigits.push(0, parseInt(k)); }
+            else if (expDigits.length === 2 && parseInt(k) > 1) { expDigits.push(0, parseInt(k)); }
+            else { expDigits.push(parseInt(k)); }
+            if ((expDigits.length >= 2 && (expDigits[0]*10+expDigits[1]>12)) || (expDigits.length >= 4 && (expDigits[2]*10+expDigits[3]>31))) { alert('日期無效'); resetExpiryField(); return; }
+            renderExpiryMask();
+        } else if (k === 'CLEAR') resetExpiryField();
     }
     function renderExpiryMask() {
-        let d = document.getElementById('displayExpiry'), r = document.getElementById('rawExpiryDate');
-        let c = ['2','0','_','_','/','_','_','/','_','_'];
-        expDigits.forEach((v,i) => c[[2,3,5,6,8,9][i]] = v);
-        d.value = c.join('');
+        let d = document.getElementById('displayExpiry'), r = document.getElementById('rawExpiryDate'), c = ['2','0','_','_','/','_','_','/','_','_'];
+        expDigits.forEach((v,i) => c[[2,3,5,6,8,9][i]] = v); d.value = c.join('');
         if (expDigits.length === 6) { r.value = `20${expDigits[0]}${expDigits[1]}-${expDigits[2]}${expDigits[3]}-${expDigits[4]}${expDigits[5]}`; setTimeout(()=>changeModeViaClick('QTY'), 150); }
     }
     function resetExpiryField() { expDigits = []; document.getElementById('rawExpiryDate').value = ''; document.getElementById('displayExpiry').value = '20__/__/__'; }
     function updateUIValues() { document.getElementById('currentInputValue').value = qtyBuffer || '0'; }
-    function updateDbStatus() { document.getElementById('dbStatus').innerText = `目前已綁定 ${Object.keys(itemDatabase).length} 筆品項與庫存基礎數據。`; }
-    function toggleDevMode() { document.getElementById('devBox').style.display = document.getElementById('devModeCheckbox').checked ? 'block' : 'none'; }
-    function simulateHardwareScan() { processScannedBarcode(document.getElementById('devBarcodeInput').value); }
-    function handleHardwareScan(e) { if(e.key === 'Enter') { processScannedBarcode(scanBuffer); scanBuffer = ''; } else scanBuffer += e.key; }
     function commitRecord() {
         const b = document.getElementById('currentBarcode').value, n = document.getElementById('currentItemName').innerText, e = document.getElementById('rawExpiryDate').value || '未註記', q = parseInt(qtyBuffer) || 0;
-        if(!b || n === '請掃描條碼...') return; if(q <= 0) { alert('請輸入數量'); return; }
-        inventoryRecords.unshift({ batchDate: new Date().toISOString().split('T')[0], timeStamp: new Date().toTimeString().split(' ')[0], barcode: b, itemName: n, expiryDisplay: e.replace(/-/g, '/'), expiryStored: e.replace(/-/g, '/'), quantity: q });
+        if(!b || q <= 0) { alert('請填寫完整'); return; }
+        inventoryRecords.unshift({ batchDate: new Date().toISOString().split('T')[0], timeStamp: new Date().toTimeString().split(' ')[0], barcode: b, itemName: n, expiryStored: e, quantity: q });
         localStorage.setItem('inventoryRecords', JSON.stringify(inventoryRecords));
-        qtyBuffer = ''; resetExpiryField(); document.getElementById('currentBarcode').value = ''; document.getElementById('currentItemName').innerText = '請掃描條碼...'; updateUIValues(); updateRecordCount(); renderPreviewTable();
+        qtyBuffer = ''; resetExpiryField(); document.getElementById('currentBarcode').value = ''; updateUIValues(); renderPreviewTable();
     }
-    function renderPreviewTable() { const t = document.querySelector('#previewTable tbody'); t.innerHTML = ''; inventoryRecords.slice(0,5).forEach(r => t.innerHTML += `<tr><td>${r.barcode}</td><td>${r.itemName}</td><td>${r.expiryDisplay}</td><td><strong>${r.quantity}</strong></td></tr>`); }
-    function updateRecordCount() { document.getElementById('recordCount').innerText = `目前共暫存：${inventoryRecords.length} 筆紀錄。`; }
+    function renderPreviewTable() { const t = document.querySelector('#previewTable tbody'); t.innerHTML = ''; inventoryRecords.slice(0,5).forEach(r => t.innerHTML += `<tr><td>${r.barcode}</td><td>${r.itemName}</td><td>${r.expiryStored}</td><td><strong>${r.quantity}</strong></td></tr>`); }
     function exportToCSV() {
         const d = document.getElementById('exportDateFilter').value, f = inventoryRecords.filter(r => r.batchDate === d);
-        if(!f.length) { alert('無紀錄'); return; }
         let c = "日期,時間,條碼,品項,效期,數量\r\n";
         f.forEach(r => c += `${r.batchDate},${r.timeStamp},="${r.barcode}",${r.itemName},${r.expiryStored},${r.quantity}\r\n`);
         const b = new Blob(["\uFEFF"+c], {type: "text/csv;charset=utf-8;"}), l = document.createElement("a");
         l.href = URL.createObjectURL(b); l.download = `盤點紀錄_${d}.csv`; l.click();
     }
-    function clearLocalRecords() { if(confirm('確定清空所有快取資料？')) { inventoryRecords = []; localStorage.removeItem('inventoryRecords'); updateRecordCount(); renderPreviewTable(); } }
 </script>
 </body>
 </html>
