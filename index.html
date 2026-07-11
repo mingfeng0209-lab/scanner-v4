@@ -511,6 +511,13 @@
     }
 
     function parseBarcodeExpiry(barcode) {
+        // 【新增防呆攔截】
+        // 如果條碼長度小於或等於 13 碼 (例如標準 EAN-13 商品條碼)
+        // 絕對不可能包含獨立的效期資訊，直接中斷解析並回傳 null，避免後續邏輯誤判
+        if (barcode.length <= 13) {
+            return null;
+        }
+
         // 1. 處理逗號分隔格式
         if (barcode.includes(',')) {
             let parts = barcode.split(',');
@@ -520,21 +527,25 @@
                 if (/^\d{8}$/.test(dateStr)) return `${dateStr.substr(0,4)}-${dateStr.substr(4,2)}-${dateStr.substr(6,2)}`;
             }
         }
+        
         // 2. 處理連續字串日期格式
         let allMatches = barcode.match(/20\d{6}/g);
         if (allMatches && allMatches.length >= 2) {
             let dateStr = allMatches[1];
             return `${dateStr.substr(0,4)}-${dateStr.substr(4,2)}-${dateStr.substr(6,2)}`;
         }
+        
         // 3. 通用保底規則
         if(barcode.includes('17') && barcode.length >= 14) {
             let index = barcode.indexOf('17');
             if(index + 8 <= barcode.length) return `20${barcode.substr(index+2,2)}-${barcode.substr(index+4,2)}-${barcode.substr(index+6,2)}`;
         }
+        
         let endSix = barcode.slice(-6);
         if(/^\d{6}$/.test(endSix)) {
             if(parseInt(endSix.substr(2,2)) >= 1 && parseInt(endSix.substr(2,2)) <= 12) return `20${endSix.substr(0,2)}-${endSix.substr(2,2)}-${endSix.substr(4,2)}`;
         }
+        
         return null;
     }
 
@@ -564,21 +575,44 @@
         }
     }
 
-    function renderExpiryMask() {
+   function renderExpiryMask() {
         let display = document.getElementById('displayExpiry');
         let raw = document.getElementById('rawExpiryDate');
         let chars = ['2', '0', '_', '_', '/', '_', '_', '/', '_', '_'];
+        
         if(expDigits[0] !== undefined) chars[2] = expDigits[0];
         if(expDigits[1] !== undefined) chars[3] = expDigits[1];
         if(expDigits[2] !== undefined) chars[5] = expDigits[2];
         if(expDigits[3] !== undefined) chars[6] = expDigits[3];
         if(expDigits[4] !== undefined) chars[8] = expDigits[4];
         if(expDigits[5] !== undefined) chars[9] = expDigits[5];
+        
         display.value = chars.join('');
+        
         if (expDigits.length === 6) {
-            raw.value = `20${expDigits[0]}${expDigits[1]}-${expDigits[2]}${expDigits[3]}-${expDigits[4]}${expDigits[5]}`;
-            setTimeout(() => { changeModeViaClick('QTY'); }, 150);
-        } else { raw.value = ''; }
+            // 提取出使用者輸入的年、月、日
+            let y = parseInt(`20${expDigits[0]}${expDigits[1]}`);
+            let m = parseInt(`${expDigits[2]}${expDigits[3]}`);
+            let d = parseInt(`${expDigits[4]}${expDigits[5]}`);
+            
+            // 使用 JS 內建 Date 物件進行真實日曆檢驗
+            let dateObj = new Date(y, m - 1, d);
+            
+            // 【核心防呆】JS 的 Date 如果遇到不存在的日期 (例如 02/30)，會自動進位變成 03/02
+            // 所以只要比對 Date 產生的 年、月、日 是否跟使用者輸入的「完全一致」
+            // 就能精準抓出大月小月錯誤、閏年錯誤、或是 00 月這種無效日期
+            if (dateObj.getFullYear() === y && dateObj.getMonth() === (m - 1) && dateObj.getDate() === d) {
+                // 日期完全合法，寫入真實數值並跳轉到數量輸入
+                raw.value = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                setTimeout(() => { changeModeViaClick('QTY'); }, 150);
+            } else {
+                // 日期不合法，觸發警告並清空重填
+                alert(`「${y}/${String(m).padStart(2, '0')}/${String(d).padStart(2, '0')}」是不存在的無效日期，請重新檢查！`);
+                resetExpiryField();
+            }
+        } else { 
+            raw.value = ''; 
+        }
     }
 
     function resetExpiryField() { expDigits = []; document.getElementById('rawExpiryDate').value = ''; document.getElementById('displayExpiry').value = '20__/__/__'; }
