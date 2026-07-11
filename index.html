@@ -24,7 +24,7 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow: hidden; /* 強制防止整個網頁出現捲軸 */
+            overflow: hidden; 
         }
 
         .step-tabs {
@@ -210,13 +210,14 @@
         }
 
         .key-btn {
-            padding: 8px; 
+            /* 修正重點：垂直 padding 加大，整體高度增加約 70% */
+            padding: 20px 8px; 
             background-color: #ecf0f1;
             color: var(--primary-color);
             border-radius: 4px;
             text-align: center;
             font-weight: bold;
-            font-size: 1.15rem;
+            font-size: 1.3rem; /* 字體配合高度微微放大 */
             user-select: none;
             cursor: pointer;
             box-shadow: 0 1px 1px rgba(0,0,0,0.1);
@@ -314,7 +315,6 @@
             </div>
 
             <!-- 【右側直欄】 -->
-            <!-- 將整個右側設為不彈性拉伸 (flex-start)，所有元件靠上緊貼 -->
             <div class="col-flex" style="justify-content: flex-start;">
                 
                 <!-- 【合體卡片】右上與右下合併，保證數字鍵盤絕對緊貼輸入器下緣 -->
@@ -336,7 +336,7 @@
                         </div>
                     </div>
 
-                    <!-- 數字鍵盤緊貼在輸入格子下方，僅留 8px 縫隙 -->
+                    <!-- 加大垂直高度後的數字鍵盤 -->
                     <div class="keyboard-grid" style="margin-top: 8px;">
                         <div class="key-btn" onclick="pressKey('1')">1</div>
                         <div class="key-btn" onclick="pressKey('2')">2</div>
@@ -351,13 +351,13 @@
                         <div class="key-btn" onclick="pressKey('00')">00</div>
                         <div class="key-btn" onclick="pressKey('CLEAR')" style="background-color: #e67e22; color: white;">清除</div>
                     </div>
-                    <!-- 確認按鈕緊貼在鍵盤下方 -->
+                    
                     <div style="margin-top: 8px;">
                         <button onclick="commitRecord()" style="background-color: #2cc36b; padding: 12px; font-size: 1rem; margin-bottom: 0;">確認儲存此筆紀錄 (Enter)</button>
                     </div>
                 </div>
 
-                <!-- 匯出歸檔按鈕：精準設定距離上方確認按鈕 45px (約一個按鈕的高度) -->
+                <!-- 匯出歸檔按鈕：精準設定距離上方確認按鈕 45px -->
                 <div style="margin-top: 45px;">
                     <button class="nav-next" onclick="switchPage(3)" style="width: 100%; padding: 12px; font-size: 1rem; margin-bottom: 0;">全部點收完成 ➔ 匯出歸檔</button>
                 </div>
