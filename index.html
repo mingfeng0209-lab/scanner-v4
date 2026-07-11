@@ -241,9 +241,9 @@
 <body>
 
 <div class="step-tabs">
-    <button class="tab-btn active" id="tab1" onclick="switchPage(1)">1. 初始化匯入</button>
-    <button class="tab-btn" id="tab2" onclick="switchPage(2)">2. 核心掃描作業</button>
-    <button class="tab-btn" id="tab3" onclick="switchPage(3)">3. 批號篩選匯出</button>
+    <button class="tab-btn active" id="tab1" onclick="switchPage(1)">匯入盤點資料</button>
+    <button class="tab-btn" id="tab2" onclick="switchPage(2)">輸入品項、效期與數量</button>
+    <button class="tab-btn" id="tab3" onclick="switchPage(3)">輸出盤點結果</button>
 </div>
 
 <div class="container">
@@ -251,15 +251,15 @@
     <!-- 第一層 -->
     <div id="page1" class="page active">
         <div class="card" style="margin-bottom:15px;">
-            <h2>步驟一：品項與現有庫存對照表匯入</h2>
+            <h2>匯入品項對照表與現有庫存量</h2>
             <div class="form-group">
                 <label>請貼入自 Excel 複製的範圍 (欄位：條碼 [Tab] 品項名稱 [Tab] 目前庫存量)</label>
                 <textarea id="dbInput" rows="6" placeholder="例如：&#10;4710123456789&#9;當歸科學中藥&#9;50&#10;4710987654321&#9;黃耆科學中藥&#9;120"></textarea>
             </div>
-            <button onclick="importDatabase()">導入本機多維度對照表</button>
+            <button onclick="importDatabase()">匯入資料</button>
             <div class="status-box" id="dbStatus">對照表狀態：讀取本機快取中...</div>
             <div style="margin-top: 10px;">
-                <button class="nav-next" onclick="switchPage(2)">對照表與庫存設定完成 ➔ 前往步驟二核心掃描</button>
+                <button class="nav-next" onclick="switchPage(2)">對照表與庫存設定完成 ➔ 前往 輸入品項、效期與數量</button>
             </div>
         </div>
     </div>
@@ -268,12 +268,12 @@
     <div id="page2" class="page">
         <div class="dev-toggle-container">
             <label style="cursor: pointer; font-size: 0.75rem; color: #7f8c8d;">
-                <input type="checkbox" id="devModeCheckbox" onchange="toggleDevMode()"> 🛠️ 測試輸入
+                <input type="checkbox" id="devModeCheckbox" onchange="toggleDevMode()"> 🛠️ 手動輸入
             </label>
         </div>
         <div class="dev-box" id="devBox">
             <div style="display: flex; gap: 8px; align-items: center;">
-                <label style="color: #b58900; font-weight: bold; font-size: 0.75rem; margin: 0;">模擬掃描：</label>
+                <label style="color: #b58900; font-weight: bold; font-size: 0.75rem; margin: 0;">手動輸入：</label>
                 <input type="text" id="devBarcodeInput" placeholder="輸入條碼" style="padding: 2px 4px; font-size: 0.8rem; flex: 1;">
                 <button style="width: auto; margin-bottom: 0; padding: 2px 10px; font-size: 0.8rem;" onclick="simulateHardwareScan()">執行</button>
             </div>
@@ -286,7 +286,7 @@
                 <div class="card">
                     <div class="form-group">
                         <label>讀取條碼</label>
-                        <input type="text" id="currentBarcode" readonly placeholder="等待掃描輸入..." style="background-color: #f8f9fa;">
+                        <input type="text" id="currentBarcode" readonly placeholder="等待掃描輸入" style="background-color: #f8f9fa;">
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
                         <label>品項名稱</label>
@@ -296,7 +296,7 @@
 
                 <!-- 左下：即時盤點預覽 -->
                 <div class="card" style="flex-grow: 1; display: flex; flex-direction: column; overflow: hidden;">
-                    <h2>本次即時盤點預覽 (最新紀錄)</h2>
+                    <h2>已儲存資料</h2>
                     <div class="table-container">
                         <table id="previewTable">
                             <thead>
@@ -317,7 +317,7 @@
             <div class="col-flex" style="justify-content: flex-start;">
                 
                 <div class="card">
-                    <h2>數據點收輸入器</h2>
+                    <h2>輸入效期與數量</h2>
                     <div class="io-container">
                         <div class="io-box">
                             <label>有效期限</label>
@@ -325,11 +325,11 @@
                             <input type="hidden" id="rawExpiryDate"> 
                         </div>
                         <div class="io-box">
-                            <label>點收數量</label>
+                            <label>數量</label>
                             <input type="text" id="currentInputValue" class="big-input focused" readonly value="0" onclick="changeModeViaClick('QTY')">
                         </div>
                         <div class="stock-box">
-                            <div class="stock-title">庫存</div>
+                            <div class="stock-title">應有</div>
                             <div class="stock-value" id="currentStockView">--</div>
                         </div>
                     </div>
@@ -349,15 +349,13 @@
                         <div class="key-btn" onclick="pressKey('CLEAR')" style="background-color: #e67e22; color: white;">清除</div>
                     </div>
                     
-                    <!-- 💡 核心變更：將確認儲存按鈕大幅下移 45px，建立防誤觸緩衝區 -->
                     <div style="margin-top: 45px;">
-                        <button onclick="commitRecord()" style="background-color: #2cc36b; padding: 12px; font-size: 1rem; margin-bottom: 0;">確認儲存此筆紀錄 (Enter)</button>
+                        <button onclick="commitRecord()" style="background-color: #2cc36b; padding: 12px; font-size: 1rem; margin-bottom: 0;">確認儲存此筆紀錄</button>
                     </div>
                 </div>
 
-                <!-- 匯出歸檔按鈕：依然精準設定距離上方確認按鈕 45px -->
                 <div style="margin-top: 45px;">
-                    <button class="nav-next" onclick="switchPage(3)" style="width: 100%; padding: 12px; font-size: 1rem; margin-bottom: 0;">全部點收完成 ➔ 匯出歸檔</button>
+                    <button class="nav-next" onclick="switchPage(3)" style="width: 100%; padding: 12px; font-size: 1rem; margin-bottom: 0;">盤點完成 ➔ 匯出紀錄</button>
                 </div>
             </div>
         </div>
@@ -366,13 +364,13 @@
     <!-- 第三層 -->
     <div id="page3" class="page">
         <div class="card" style="margin-bottom:15px;">
-            <h2>步驟三：指定歸檔批號資料匯出</h2>
+            <h2>匯出盤點紀錄</h2>
             <div class="status-box" id="recordCount">目前本機共累積暫存：0 筆紀錄</div>
             <div class="form-group">
-                <label>請選擇欲匯出的批號歸檔日期：</label>
+                <label>請選擇欲匯出的盤點日期：</label>
                 <input type="date" id="exportDateFilter">
             </div>
-            <button onclick="exportToCSV()">匯出防亂碼 Excel CSV 檔案</button>
+            <button onclick="exportToCSV()">匯出 CSV 檔案</button>
             <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
             <h2>系統維護</h2>
             <button class="danger" onclick="clearLocalRecords()">清空本機暫存歷史盤點紀錄</button>
@@ -433,7 +431,7 @@
 
         localStorage.setItem('itemDatabase', JSON.stringify(itemDatabase));
         updateDbStatus();
-        alert(`成功導入 ${count} 筆品項與現有庫存對照！`);
+        alert(`成功導入 ${count} 筆品項與庫存資料！`);
         document.getElementById('dbInput').value = '';
     }
 
