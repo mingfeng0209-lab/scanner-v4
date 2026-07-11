@@ -467,20 +467,34 @@
         }
     }
 
-    function processScannedBarcode(barcode) {
+  function processScannedBarcode(barcode) {
         barcode = barcode.trim();
         document.getElementById('currentBarcode').value = barcode;
         
-        if (itemDatabase[barcode]) {
-            document.getElementById('currentItemName').innerText = itemDatabase[barcode].name;
-            document.getElementById('currentStockView').innerText = itemDatabase[barcode].stock;
-        } else {
+        let found = false;
+
+        // 核心邏輯：遍歷對照表，尋找「開頭完全符合」且「長度邏輯正確」的項目
+        for (let code in itemDatabase) {
+            // 規則：必須是開頭吻合，且長度必須達到該品項代碼的完整長度
+            // 這樣可以確保藥品代碼為 13 碼時，掃到 13 碼才會觸發，防止誤觸
+            if (barcode.startsWith(code) && barcode.length >= code.length) {
+                // 如果您要確保「精確對照」，這裡可以增加一個條件：
+                // 如果您希望掃到的碼比對照表長，但我們只認前 X 碼，這裡直接設定
+                document.getElementById('currentItemName').innerText = itemDatabase[code].name;
+                document.getElementById('currentStockView').innerText = itemDatabase[code].stock;
+                found = true;
+                break; // 找到後立即停止比對
+            }
+        }
+
+        // 若比對皆失敗
+        if (!found) {
             document.getElementById('currentItemName').innerText = barcode; 
             document.getElementById('currentStockView').innerText = '0';
         }
 
+        // 解析效期邏輯 (保持與之前一致)
         let parsedDate = parseBarcodeExpiry(barcode);
-        
         if(parsedDate) {
             document.getElementById('rawExpiryDate').value = parsedDate; 
             document.getElementById('displayExpiry').value = parsedDate.replace(/-/g, '/'); 
@@ -493,7 +507,6 @@
             changeModeViaClick('EXP');
             qtyBuffer = '';
         }
-
         updateUIValues();
     }
 
