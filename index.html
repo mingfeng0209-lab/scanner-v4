@@ -561,11 +561,21 @@
         return null;
     }
 
-    function convertToTaiwanYear(isoDateStr) {
+   function convertToTaiwanYear(isoDateStr) {
         if(!isoDateStr || isoDateStr === '未註記') return '未註記';
         const parts = isoDateStr.split('-');
         if(parts.length < 3) return isoDateStr;
-        return `民國 ${parseInt(parts[0]) - 1911} 年 ${parts[1]} 月 ${parts[2]} 日`;
+        
+        // 取得民國年 (西元年 - 1911)
+        let twYear = parseInt(parts[0]) - 1911;
+        
+        // 為了確保 YYY 格式，如果遇到民國 100 年以下的年份，前方自動補 0 (例如 99 年會變成 099)
+        let formattedYear = String(twYear).padStart(3, '0');
+        let month = parts[1];
+        let day = parts[2];
+        
+        // 將 年、月、日 直接組合在一起回傳
+        return `${formattedYear}${month}${day}`;
     }
 
     function pressKey(key) {
