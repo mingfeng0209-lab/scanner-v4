@@ -671,14 +671,39 @@
     function exportToCSV() {
         const targetDate = document.getElementById('exportDateFilter').value;
         if(!targetDate) { alert('請先選擇歸檔批號日期。'); return; }
+        
         const filtered = inventoryRecords.filter(rec => rec.batchDate === targetDate);
         if(filtered.length === 0) { alert(`在 ${targetDate} 找不到任何對應的盤點紀錄。`); return; }
-        let csvContent = "歸檔批號日期,點收時間,商品條碼,品項名稱,有效期限(民國年格式),盤點數量\r\n";
-        filtered.forEach(rec => { csvContent += [rec.batchDate, rec.timeStamp, `="${rec.barcode}"`, rec.itemName.replace(/,/g, ' '), rec.expiryStored, rec.quantity].join(",") + "\r\n"; });
+        
+        // 【修正】將表頭精簡並更改為您指定的 5 個欄位名稱
+        let csvContent = "盤點時間戳記,掃描條碼內容,品項名,有效日期(民國年YYYMMDD),數量\r\n";
+        
+        filtered.forEach(rec => { 
+            // 處理效期格式，加上 ="" 防止 Excel 吞掉開頭的 0
+            let exportExpiry = (rec.expiryStored !== '未註記') ? `="${rec.expiryStored}"` : rec.expiryStored;
+            
+            // 清除品項名稱中可能破壞 CSV 格式的逗號與引號
+            let cleanItemName = rec.itemName.replace(/,/g, ' ').replace(/"/g, '');
+            
+            // 【修正】將「日期」與「時間」合併成單一的時間戳記欄位
+            let fullTimeStamp = `${rec.batchDate} ${rec.timeStamp}`;
+            
+            // 依序填入 5 個欄位的資料
+            csvContent += [
+                fullTimeStamp, 
+                `="${rec.barcode}"`, 
+                cleanItemName, 
+                exportExpiry, 
+                rec.quantity
+            ].join(",") + "\r\n"; 
+        });
+        
         const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
         const link = document.createElement("a");
         const url = URL.createObjectURL(blob);
-        link.setAttribute("href", url); link.setAttribute("download", `中藥盤點紀錄_${targetDate}.csv`); link.click();
+        link.setAttribute("href", url); 
+        link.setAttribute("download", `中藥盤點紀錄_${targetDate}.csv`); 
+        link.click();
     }
 
     function clearLocalRecords() {
