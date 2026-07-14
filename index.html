@@ -376,21 +376,6 @@
     let scanBuffer = '';
     let lastKeyTime = Date.now();
 
-    // 【新增】自動產生並記憶該台設備的專屬 ID
-    let deviceId = localStorage.getItem('deviceId');
-    if (!deviceId) {
-        deviceId = Math.random().toString(36).substring(2, 6).toUpperCase();
-        localStorage.setItem('deviceId', deviceId);
-    }
-    
-    let itemDatabase = {}; 
-    let inventoryRecords = [];
-    let currentInputMode = 'QTY'; 
-    let qtyBuffer = '';
-    let expDigits = []; 
-    let scanBuffer = '';
-    let lastKeyTime = Date.now();
-
     window.onload = function() {
         if(localStorage.getItem('itemDatabase')) {
             itemDatabase = JSON.parse(localStorage.getItem('itemDatabase'));
@@ -576,7 +561,7 @@
         return null;
     }
 
-   function convertToTaiwanYear(isoDateStr) {
+    function convertToTaiwanYear(isoDateStr) {
         if(!isoDateStr || isoDateStr === '未註記') return '未註記';
         const parts = isoDateStr.split('-');
         if(parts.length < 3) return isoDateStr;
@@ -591,25 +576,6 @@
         
         // 將 年、月、日 直接組合在一起回傳
         return `${formattedYear}${month}${day}`;
-    }
-
-    function pressKey(key) {
-        if (currentInputMode === 'QTY') {
-            if (key === 'CLEAR') { qtyBuffer = ''; } 
-            else { qtyBuffer += key; }
-            updateUIValues();
-        } else {
-            if (key === 'CLEAR') { resetExpiryField(); } 
-            else if (key !== '00') { 
-                if (expDigits.length < 6) {
-                    let num = parseInt(key);
-                    if (expDigits.length === 2 && num >= 2) { expDigits.push(0); expDigits.push(num); }
-                    else if (expDigits.length === 4 && num >= 4) { expDigits.push(0); expDigits.push(num); }
-                    else { expDigits.push(num); }
-                    renderExpiryMask();
-                }
-            }
-        }
     }
 
    function renderExpiryMask() {
@@ -683,50 +649,17 @@
 
     function updateRecordCount() { document.getElementById('recordCount').innerText = `目前本機 Local 端共累積暫存：${inventoryRecords.length} 筆紀錄。`; }
 
-   function exportToCSV() {
+    function exportToCSV() {
         const targetDate = document.getElementById('exportDateFilter').value;
         if(!targetDate) { alert('請先選擇歸檔批號日期。'); return; }
-        
         const filtered = inventoryRecords.filter(rec => rec.batchDate === targetDate);
         if(filtered.length === 0) { alert(`在 ${targetDate} 找不到任何對應的盤點紀錄。`); return; }
-        
-        let csvContent = "盤點時間戳記,掃描條碼內容,品項名,有效日期(民國年YYYMMDD),數量\r\n";
-        
-        // 【解決需求 1】標準 CSV 欄位安全處理函式
-        const escapeCSV = (str) => {
-            if (str === null || str === undefined) return '""';
-            const stringValue = String(str);
-            // 將內容用雙引號 " " 包裹起來，避免內部的逗號被當成換格符號
-            const escaped = stringValue.replace(/"/g, '""');
-            return `"${escaped}"`;
-        };
-        
-        filtered.forEach(rec => { 
-            let fullTimeStamp = `${rec.batchDate} ${rec.timeStamp}`;
-            
-            // 將所有欄位都經過 escapeCSV 包裹防護
-            let safeBarcode = escapeCSV(`="${rec.barcode}"`);
-            let safeItemName = escapeCSV(rec.itemName);
-            let rawExpiry = (rec.expiryStored !== '未註記') ? `="${rec.expiryStored}"` : rec.expiryStored;
-            let safeExpiry = escapeCSV(rawExpiry);
-            
-            csvContent += [
-                escapeCSV(fullTimeStamp), 
-                safeBarcode, 
-                safeItemName, 
-                safeExpiry, 
-                escapeCSV(rec.quantity)
-            ].join(",") + "\r\n"; 
-        });
-        
+        let csvContent = "歸檔批號日期,點收時間,商品條碼,品項名稱,有效期限(民國年格式),盤點數量\r\n";
+        filtered.forEach(rec => { csvContent += [rec.batchDate, rec.timeStamp, `="${rec.barcode}"`, rec.itemName.replace(/,/g, ' '), rec.expiryStored, rec.quantity].join(",") + "\r\n"; });
         const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
         const link = document.createElement("a");
         const url = URL.createObjectURL(blob);
-        link.setAttribute("href", url); 
-        
-        // 【解決需求 2】在匯出的檔名中加入設備專屬 ID
-        link.setAttribute("download", `中藥盤點紀錄_設備${deviceId}_${targetDate}.csv`); 
-        link.click();
+        link.setAttribute("href", url); link.setAttribute("download", `中藥盤點紀錄_${targetDate}.csv`); link.click();
     }
 
     function clearLocalRecords() {
