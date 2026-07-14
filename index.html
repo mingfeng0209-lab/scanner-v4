@@ -386,7 +386,12 @@
         updateDbStatus();
         updateRecordCount();
         renderPreviewTable();
-        document.getElementById('exportDateFilter').value = new Date().toISOString().split('T')[0];
+        
+        // 【修正 1】：使用精準的本地端日期初始化選擇器，避免 UTC 時差
+        const d = new Date();
+        const localDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        document.getElementById('exportDateFilter').value = localDateStr;
+        
         window.addEventListener('keypress', handleHardwareScan);
     };
 
@@ -649,19 +654,36 @@
         }
     }
 
-    function commitRecord() {
+   function commitRecord() {
         const barcode = document.getElementById('currentBarcode').value;
         const itemName = document.getElementById('currentItemName').innerText;
         const rawExpiry = document.getElementById('rawExpiryDate').value || '未註記';
         const qty = parseInt(qtyBuffer) || 0;
+        
         if(!barcode || itemName === '請掃描條碼...') { alert('尚未讀取任何有效條碼。'); return; }
         if(rawExpiry === '' && expDigits.length > 0) { alert('請先將有效期限 6 碼完全補齊。'); return; }
         if(qty <= 0) { alert('請輸入大於 0 的正確點收數量。'); return; }
+        
         const now = new Date();
-        const batchDate = now.toISOString().split('T')[0];
-        const newRecord = { batchDate, timeStamp: now.toTimeString().split(' ')[0], barcode, itemName, expiryDisplay: (rawExpiry !== '未註記') ? rawExpiry.replace(/-/g, '/') : '未註記', expiryStored: (rawExpiry !== '未註記') ? convertToTaiwanYear(rawExpiry) : '未註記', quantity: qty };
+        
+        // 【修正 2】：獲取精準的本地端日期 (YYYY-MM-DD) 作為批號，避免 8 AM 陷阱
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const batchDate = `${year}-${month}-${day}`;
+        
+        const newRecord = { 
+            batchDate, 
+            timeStamp: now.toTimeString().split(' ')[0], 
+            barcode, 
+            itemName, 
+            expiryDisplay: (rawExpiry !== '未註記') ? rawExpiry.replace(/-/g, '/') : '未註記', 
+            expiryStored: (rawExpiry !== '未註記') ? convertToTaiwanYear(rawExpiry) : '未註記', 
+            quantity: qty 
+        };
         inventoryRecords.unshift(newRecord);
         localStorage.setItem('inventoryRecords', JSON.stringify(inventoryRecords));
+        
         qtyBuffer = ''; resetExpiryField(); document.getElementById('currentBarcode').value = ''; document.getElementById('currentItemName').innerText = '請掃描條碼...'; document.getElementById('currentStockView').innerText = '--'; changeModeViaClick('QTY'); updateUIValues(); updateRecordCount(); renderPreviewTable();
     }
 
@@ -688,19 +710,11 @@
         
         filtered.forEach(rec => { 
             let fullTimeStamp = `${rec.batchDate} ${rec.timeStamp}`;
-            
-            // 【新解法】將條碼內容中的「半形逗號」替換為「全形逗號」
             let safeBarcodeText = String(rec.barcode).replace(/,/g, '，');
-            // 套上 ="..." 確保 Excel 不會把純數字條碼變成科學記號
             let safeBarcode = `="${safeBarcodeText}"`;
-            
-            // 將品項名稱中的「半形逗號」也替換為「全形逗號」
             let safeItemName = String(rec.itemName).replace(/,/g, '，');
-            
-            // 處理效期
             let safeExpiry = (rec.expiryStored !== '未註記') ? `="${rec.expiryStored}"` : rec.expiryStored;
             
-            // 組合資料
             csvContent += [
                 fullTimeStamp, 
                 safeBarcode, 
@@ -714,7 +728,10 @@
         const link = document.createElement("a");
         const url = URL.createObjectURL(blob);
         link.setAttribute("href", url); 
-        link.setAttribute("download", `中藥盤點紀錄_${targetDate}.csv`); 
+        
+        // 【修正 3】：在檔名加上精確到「秒」的時間戳 (例如：_095210)，防止系統開到舊檔案
+        const timeStr = new Date().toTimeString().split(' ')[0].replace(/:/g, '');
+        link.setAttribute("download", `中藥盤點紀錄_${targetDate}_${timeStr}.csv`); 
         link.click();
     }
 
