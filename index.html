@@ -376,6 +376,21 @@
     let scanBuffer = '';
     let lastKeyTime = Date.now();
 
+    // 【新增】自動產生並記憶該台設備的專屬 ID
+    let deviceId = localStorage.getItem('deviceId');
+    if (!deviceId) {
+        deviceId = Math.random().toString(36).substring(2, 6).toUpperCase();
+        localStorage.setItem('deviceId', deviceId);
+    }
+    
+    let itemDatabase = {}; 
+    let inventoryRecords = [];
+    let currentInputMode = 'QTY'; 
+    let qtyBuffer = '';
+    let expDigits = []; 
+    let scanBuffer = '';
+    let lastKeyTime = Date.now();
+
     window.onload = function() {
         if(localStorage.getItem('itemDatabase')) {
             itemDatabase = JSON.parse(localStorage.getItem('itemDatabase'));
@@ -668,33 +683,39 @@
 
     function updateRecordCount() { document.getElementById('recordCount').innerText = `目前本機 Local 端共累積暫存：${inventoryRecords.length} 筆紀錄。`; }
 
-    function exportToCSV() {
+   function exportToCSV() {
         const targetDate = document.getElementById('exportDateFilter').value;
         if(!targetDate) { alert('請先選擇歸檔批號日期。'); return; }
         
         const filtered = inventoryRecords.filter(rec => rec.batchDate === targetDate);
         if(filtered.length === 0) { alert(`在 ${targetDate} 找不到任何對應的盤點紀錄。`); return; }
         
-        // 【修正】將表頭精簡並更改為您指定的 5 個欄位名稱
         let csvContent = "盤點時間戳記,掃描條碼內容,品項名,有效日期(民國年YYYMMDD),數量\r\n";
         
+        // 【解決需求 1】標準 CSV 欄位安全處理函式
+        const escapeCSV = (str) => {
+            if (str === null || str === undefined) return '""';
+            const stringValue = String(str);
+            // 將內容用雙引號 " " 包裹起來，避免內部的逗號被當成換格符號
+            const escaped = stringValue.replace(/"/g, '""');
+            return `"${escaped}"`;
+        };
+        
         filtered.forEach(rec => { 
-            // 處理效期格式，加上 ="" 防止 Excel 吞掉開頭的 0
-            let exportExpiry = (rec.expiryStored !== '未註記') ? `="${rec.expiryStored}"` : rec.expiryStored;
-            
-            // 清除品項名稱中可能破壞 CSV 格式的逗號與引號
-            let cleanItemName = rec.itemName.replace(/,/g, ' ').replace(/"/g, '');
-            
-            // 【修正】將「日期」與「時間」合併成單一的時間戳記欄位
             let fullTimeStamp = `${rec.batchDate} ${rec.timeStamp}`;
             
-            // 依序填入 5 個欄位的資料
+            // 將所有欄位都經過 escapeCSV 包裹防護
+            let safeBarcode = escapeCSV(`="${rec.barcode}"`);
+            let safeItemName = escapeCSV(rec.itemName);
+            let rawExpiry = (rec.expiryStored !== '未註記') ? `="${rec.expiryStored}"` : rec.expiryStored;
+            let safeExpiry = escapeCSV(rawExpiry);
+            
             csvContent += [
-                fullTimeStamp, 
-                `="${rec.barcode}"`, 
-                cleanItemName, 
-                exportExpiry, 
-                rec.quantity
+                escapeCSV(fullTimeStamp), 
+                safeBarcode, 
+                safeItemName, 
+                safeExpiry, 
+                escapeCSV(rec.quantity)
             ].join(",") + "\r\n"; 
         });
         
@@ -702,7 +723,9 @@
         const link = document.createElement("a");
         const url = URL.createObjectURL(blob);
         link.setAttribute("href", url); 
-        link.setAttribute("download", `中藥盤點紀錄_${targetDate}.csv`); 
+        
+        // 【解決需求 2】在匯出的檔名中加入設備專屬 ID
+        link.setAttribute("download", `中藥盤點紀錄_設備${deviceId}_${targetDate}.csv`); 
         link.click();
     }
 
