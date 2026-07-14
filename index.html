@@ -621,6 +621,17 @@
     function resetExpiryField() { expDigits = []; document.getElementById('rawExpiryDate').value = ''; document.getElementById('displayExpiry').value = '20__/__/__'; }
     function updateUIValues() { document.getElementById('currentInputValue').value = qtyBuffer || '0'; }
 
+function updateUIValues() { document.getElementById('currentInputValue').value = qtyBuffer || '0'; }
+
+    // ▼ 將修復的按鍵功能貼在這裡 ▼
+    function pressKey(key) {
+         // ... (上述程式碼) ...
+    }
+    // ▲ 結束 ▲
+
+    function commitRecord() {
+        // ...
+
     function commitRecord() {
         const barcode = document.getElementById('currentBarcode').value;
         const itemName = document.getElementById('currentItemName').innerText;
