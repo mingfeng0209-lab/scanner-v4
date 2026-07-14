@@ -652,14 +652,42 @@
     function exportToCSV() {
         const targetDate = document.getElementById('exportDateFilter').value;
         if(!targetDate) { alert('請先選擇歸檔批號日期。'); return; }
+        
         const filtered = inventoryRecords.filter(rec => rec.batchDate === targetDate);
         if(filtered.length === 0) { alert(`在 ${targetDate} 找不到任何對應的盤點紀錄。`); return; }
-        let csvContent = "歸檔批號日期,點收時間,商品條碼,品項名稱,有效期限(民國年格式),盤點數量\r\n";
-        filtered.forEach(rec => { csvContent += [rec.batchDate, rec.timeStamp, `="${rec.barcode}"`, rec.itemName.replace(/,/g, ' '), rec.expiryStored, rec.quantity].join(",") + "\r\n"; });
+        
+        let csvContent = "盤點時間戳記,掃描條碼內容,品項名,有效日期(民國年YYYMMDD),數量\r\n";
+        
+        filtered.forEach(rec => { 
+            let fullTimeStamp = `${rec.batchDate} ${rec.timeStamp}`;
+            
+            // 【新解法】將條碼內容中的「半形逗號」替換為「全形逗號」
+            let safeBarcodeText = String(rec.barcode).replace(/,/g, '，');
+            // 套上 ="..." 確保 Excel 不會把純數字條碼變成科學記號
+            let safeBarcode = `="${safeBarcodeText}"`;
+            
+            // 將品項名稱中的「半形逗號」也替換為「全形逗號」
+            let safeItemName = String(rec.itemName).replace(/,/g, '，');
+            
+            // 處理效期
+            let safeExpiry = (rec.expiryStored !== '未註記') ? `="${rec.expiryStored}"` : rec.expiryStored;
+            
+            // 組合資料
+            csvContent += [
+                fullTimeStamp, 
+                safeBarcode, 
+                safeItemName, 
+                safeExpiry, 
+                rec.quantity
+            ].join(",") + "\r\n"; 
+        });
+        
         const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
         const link = document.createElement("a");
         const url = URL.createObjectURL(blob);
-        link.setAttribute("href", url); link.setAttribute("download", `中藥盤點紀錄_${targetDate}.csv`); link.click();
+        link.setAttribute("href", url); 
+        link.setAttribute("download", `中藥盤點紀錄_${targetDate}.csv`); 
+        link.click();
     }
 
     function clearLocalRecords() {
