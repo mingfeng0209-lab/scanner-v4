@@ -619,18 +619,35 @@
     }
 
     function resetExpiryField() { expDigits = []; document.getElementById('rawExpiryDate').value = ''; document.getElementById('displayExpiry').value = '20__/__/__'; }
-    function updateUIValues() { document.getElementById('currentInputValue').value = qtyBuffer || '0'; }
-
-function updateUIValues() { document.getElementById('currentInputValue').value = qtyBuffer || '0'; }
-
-    // ▼ 將修復的按鍵功能貼在這裡 ▼
-    function pressKey(key) {
-         // ... (上述程式碼) ...
+    function updateUIValues() { 
+        document.getElementById('currentInputValue').value = qtyBuffer || '0'; 
     }
-    // ▲ 結束 ▲
 
-    function commitRecord() {
-        // ...
+    function pressKey(key) {
+        if (currentInputMode === 'QTY') {
+            if (key === 'CLEAR') {
+                qtyBuffer = '';
+            } else {
+                qtyBuffer += key;
+                if (qtyBuffer.length > 1 && qtyBuffer.startsWith('0')) {
+                    qtyBuffer = parseInt(qtyBuffer, 10).toString();
+                }
+            }
+            updateUIValues();
+        } else if (currentInputMode === 'EXP') {
+            if (key === 'CLEAR') {
+                resetExpiryField();
+            } else {
+                if (key === '00') {
+                    if (expDigits.length < 6) expDigits.push('0');
+                    if (expDigits.length < 6) expDigits.push('0');
+                } else {
+                    if (expDigits.length < 6) expDigits.push(key);
+                }
+            }
+            renderExpiryMask();
+        }
+    }
 
     function commitRecord() {
         const barcode = document.getElementById('currentBarcode').value;
