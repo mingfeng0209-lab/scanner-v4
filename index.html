@@ -260,7 +260,7 @@
         </div>
     </div>
 
-   <div id="page2" class="page">
+  <div id="page2" class="page">
         <div class="dev-toggle-container">
             <label style="cursor: pointer; font-size: 0.75rem; color: #7f8c8d;">
                 <input type="checkbox" id="devModeCheckbox" onchange="toggleDevMode()"> 🛠️ 手動輸入
@@ -287,7 +287,6 @@
                         <div class="huge-item-name" id="currentItemName">請掃描條碼...</div>
                     </div>
                 </div>
-
                 <div class="card" style="flex-grow: 1; display: flex; flex-direction: column; overflow: hidden;">
                     <h2>已儲存資料</h2>
                     <div class="table-container">
@@ -304,7 +303,7 @@
                         </table>
                     </div>
                 </div>
-            </div>
+            </div> <!-- 這裡關閉第一個 col-flex -->
 
             <!-- 右側輸入欄 -->
             <div class="col-flex" style="justify-content: flex-start;">
@@ -325,7 +324,6 @@
                             <div class="stock-value" id="currentStockView">--</div>
                         </div>
                     </div>
-
                     <div class="keyboard-grid" style="margin-top: 8px;">
                         <div class="key-btn" onclick="pressKey('1')">1</div>
                         <div class="key-btn" onclick="pressKey('2')">2</div>
@@ -341,19 +339,17 @@
                         <div class="key-btn" onclick="pressKey('.')">.</div>
                         <div class="key-btn" onclick="pressKey('CLEAR')" style="grid-column: span 3; background-color: #e67e22; color: white;">清除</div>
                     </div>
-                    
                     <div style="margin-top: 45px;">
                         <button onclick="commitRecord()" style="background-color: #2cc36b; padding: 12px; font-size: 1rem; margin-bottom: 0;">確認儲存此筆紀錄</button>
                     </div>
                 </div>
-
                 <div style="margin-top: 45px;">
                     <button class="nav-next" onclick="switchPage(3)" style="width: 100%; padding: 12px; font-size: 1rem; margin-bottom: 0;">盤點完成 ➔ 匯出紀錄</button>
                 </div>
-            </div>
-        </div> <!-- 關閉 layout-grid -->
-    </div> <!-- 關閉 page2 -->
-
+            </div> <!-- 這裡關閉第二個 col-flex -->
+        </div> <!-- 這裡關閉 layout-grid -->
+    </div> <!-- 這裡關閉 page2 -->
+    
     <div id="page3" class="page">
         <div class="card" style="margin-bottom:15px;">
             <h2>匯出盤點紀錄</h2>
