@@ -62,14 +62,15 @@
             display: flex;
             flex-direction: column;
             width: 100%;
-            overflow: hidden;
+            overflow-y: auto; /* 同樣確保容器本身可捲動 */
         }
 
         .page { 
             display: none; 
             flex-grow: 1;
-            overflow: hidden;
             flex-direction: column;
+            overflow-y: auto; /* 將 hidden 改為 auto，讓內容過長時可以捲動 */
+            padding: 10px;    /* 增加一點內距，避免貼邊 */
         }
         
         .page.active { display: flex; }
