@@ -308,6 +308,7 @@
             <div class="col-flex" style="justify-content: flex-start;">
                 <div class="card">
                     <h2>輸入效期與數量</h2>
+                    
                     <div class="io-container">
                         <div class="io-box">
                             <label>有效期限</label>
@@ -334,10 +335,16 @@
                         <div class="key-btn" onclick="pressKey('7')">7</div>
                         <div class="key-btn" onclick="pressKey('8')">8</div>
                         <div class="key-btn" onclick="pressKey('9')">9</div>
+                        <div style="visibility: hidden;"></div> <!-- 左下角空白佔位，讓 0 維持居中 -->
                         <div class="key-btn" onclick="pressKey('0')">0</div>
-                        <div class="key-btn" onclick="pressKey('00')">00</div>
-                        <div class="key-btn" onclick="pressKey('CLEAR')" style="background-color: #e67e22; color: white;">清除</div>
+                        <div class="key-btn" onclick="pressKey('.')">.</div> <!-- 固定顯示的小數點 -->
+                        <div class="key-btn" onclick="pressKey('CLEAR')" style="grid-column: span 3; background-color: #e67e22; color: white;">清除</div>
                     </div>
+                    
+                    <div style="margin-top: 45px;">
+                        <button onclick="commitRecord()" style="background-color: #2cc36b; padding: 12px; font-size: 1rem; margin-bottom: 0;">確認儲存此筆紀錄</button>
+                    </div>
+                </div>
                     
                     <div style="margin-top: 45px;">
                         <button onclick="commitRecord()" style="background-color: #2cc36b; padding: 12px; font-size: 1rem; margin-bottom: 0;">確認儲存此筆紀錄</button>
