@@ -658,7 +658,7 @@
         const barcode = document.getElementById('currentBarcode').value;
         const itemName = document.getElementById('currentItemName').innerText;
         const rawExpiry = document.getElementById('rawExpiryDate').value || '未註記';
-        const qty = parseInt(qtyBuffer) || 0;
+        const qty = parseFloat(qtyBuffer) || 0;
         
         if(!barcode || itemName === '請掃描條碼...') { alert('尚未讀取任何有效條碼。'); return; }
         if(rawExpiry === '' && expDigits.length > 0) { alert('請先將有效期限 6 碼完全補齊。'); return; }
